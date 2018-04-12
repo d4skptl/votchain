@@ -68,7 +68,7 @@ if not cli.is_ready():
 if privkey: cli.import_key(privkey)
 
 if args.balance:
-    print(%cli.get_balance())
+    print(cli.get_balance())
 
 if args.sendto:
     dst_amt = args.sendto.split(':')
