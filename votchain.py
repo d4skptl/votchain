@@ -50,12 +50,11 @@ class Votchain(object):
         if self.debug:
             for line in iter(proc.stdout.readline, b''):
                 print('got line: {0}'.format(line.decode('utf-8')), end='')
-    
+
     def start(self):
         self.proc = subprocess.Popen(self.args,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-
         self.t = threading.Thread(target=self.output, args=(self.proc,))
         self.t.start()
 
@@ -93,9 +92,16 @@ class AddressGenerator(object):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT)
         self.rpc = RPCHost('http://%s:%s@%s:%s'%('vocdoni','vocdoni','127.0.0.1',str(rpc_port)))
-        time.sleep(2)
 
     def get(self):
+        ready = False
+        while not ready:
+            time.sleep(1)
+            try:
+                self.rpc.call('help')
+                ready = True
+            except: pass
+
         addr = self.rpc.call('getaccountaddress','')
         priv_key = self.rpc.call('dumpprivkey', addr)
         pub_key = self.rpc.call('validateaddress', addr)['pubkey']

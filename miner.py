@@ -78,7 +78,6 @@ def get_ports(name):
     base_port = int('0x'+m.hexdigest(),16)%10000
     return base_port+20000, base_port+30000
 
-
 args = parse_args()
 pubkey = None
 privkey = None
@@ -106,8 +105,8 @@ if args.peers:
     peers[:] = map(lambda p: p+":%d"%port, peers)
 else: peers = []
 
-v = Votchain(name=args.name, binary=args.binary, peers=peers, port=str(port), \
-        rpc_port=str(rpc_port), mine=args.gen, supply=args.supply, \
+v = Votchain(name=args.name, binary=args.binary, peers=peers, port=str(port),
+        rpc_port=str(rpc_port), mine=args.gen, supply=args.supply,
         pubkey=pubkey, staking=args.staking)
 v.debug = args.debug
 
