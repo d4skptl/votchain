@@ -153,7 +153,7 @@ class VotchainCli(object):
     def get_pubkey(self, addr=None):
         if not addr:
             addr = self.get_addresses()[0]
-        return self.call("validateaddress", addr)
+        return self.call("validateaddress", addr)['pubkey']
 
     def import_key(self, key):
         return self.call("importprivkey", key)

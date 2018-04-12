@@ -24,13 +24,16 @@ def parse_args():
             action="store_true",
             help='Show current tokens balance')
     parser.add_argument(
+            '-w',
+            dest='walletinfo',
+            action="store_true",
+            help='Show wallet info (address and public key)')
+    parser.add_argument(
             '-s',
             dest='sendto',
             type=str,
             default=None,
             help='Send tokens to address. Syntax <addr>:<amount>')
-
-
     return parser.parse_args()
 
 def get_ports(name):
@@ -69,6 +72,10 @@ if privkey: cli.import_key(privkey)
 
 if args.balance:
     print(cli.get_balance())
+
+if args.walletinfo:
+    for a in cli.get_addresses():
+        print("\nAddress: %s\nPubKey: %s" %(a,cli.get_pubkey(addr=a)))
 
 if args.sendto:
     dst_amt = args.sendto.split(':')
