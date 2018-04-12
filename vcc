@@ -34,6 +34,12 @@ def parse_args():
             type=str,
             default=None,
             help='Send tokens to address. Syntax <addr>:<amount>')
+    parser.add_argument(
+            '-c',
+            dest='rawcall',
+            type=str,
+            default=None,
+            help='Make raw RPC calls to komodod like: -c help or -c "getblock 1"')
     return parser.parse_args()
 
 def get_ports(name):
@@ -76,6 +82,9 @@ if args.balance:
 if args.walletinfo:
     for a in cli.get_addresses():
         print("\nAddress: %s\nPubKey: %s" %(a,cli.get_pubkey(addr=a)))
+
+if args.rawcall:
+    print(cli.call(*args.rawcall.split()))
 
 if args.sendto:
     dst_amt = args.sendto.split(':')
