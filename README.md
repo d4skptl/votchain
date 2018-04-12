@@ -76,11 +76,27 @@ optional arguments:
   -n NAME      Name for the voting chain
   -m BINARY    Location for the komodo daemon (komodod) binary
   -b BLOCKS    Number of blocks before die
-  -s SUPPLY    Total token supply
-  -a           Use proof of stake, only miners with supply generate blocks
+  -s SUPPLY    Initial token supply (first mined block get it)
+  -a           Enable proof of stake
+  -r REWARD    Enable reward per block (in satoshis)
   -i KEYSFILE  File containing keys to be used (generated with -k)
   -p PEERS     Coma separated list of peers to connect with
   -d           Show debug messages
   -g           Generate blocks (mine)
   -k           Generate new keys and exit
+```
+
+```
+usage: vcc [-h] [-n NAME] [-i KEYSFILE] [-b] [-w] [-s SENDTO] [-c RAWCALL]
+
+VotChain Miner
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -n NAME      Name for the voting chain
+  -i KEYSFILE  File containing keys to be used
+  -b           Show current tokens balance
+  -w           Show wallet info (address and public key)
+  -s SENDTO    Send tokens to address. Syntax <addr>:<amount>
+  -c RAWCALL   Make raw RPC calls to komodod like: -c help or -c "getblock 1"
 ```

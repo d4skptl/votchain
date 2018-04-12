@@ -7,7 +7,7 @@ class Votchain(object):
     debug = False
     def __init__(self, binary="./komodod", name=None, supply=1000, port=1714,
             rpc_port=None, pubkey=None, peers=[], mine=True,
-            basedir='/tmp', staking=False):
+            basedir='/tmp', staking=False, reward=None):
         self.t = None
         self.proc = None
         self.rpc_port = rpc_port or str((int(100000*random.random())%60000)+5000)
@@ -15,7 +15,8 @@ class Votchain(object):
         self.args = [binary]
         self.args.append('-ac_name=' + str(name or int(1000000*random.random())))
         self.args.append('-ac_supply='+str(supply))
-        self.args.append('-ac_end=1') # no reward after first block
+        if reward: self.args.append('-ac_reward='+str(reward))
+        else: self.args.append('-ac_end=1') # no reward after first block
         if staking: self.args.append('-ac_staking=100')
         self.args.append('-port='+str(port))
         self.args.append('-rpcport='+self.rpc_port)

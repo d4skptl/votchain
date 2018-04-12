@@ -29,12 +29,18 @@ def parse_args():
             dest='supply',
             type=int,
             default=1000,
-            help='Total token supply')
+            help='Initial token supply (first mined block get it)')
     parser.add_argument(
             '-a',
             dest='staking',
             action="store_true",
-            help='Use proof of stake, only miners with supply generate blocks')
+            help='Enable proof of stake')
+    parser.add_argument(
+            '-r',
+            dest='reward',
+            type=int,
+            default=None,
+            help='Enable reward per block (in satoshis)')
     parser.add_argument(
             '-i',
             dest='keysfile',
@@ -107,7 +113,7 @@ else: peers = []
 
 v = Votchain(name=args.name, binary=args.binary, peers=peers, port=str(port),
         rpc_port=str(rpc_port), mine=args.gen, supply=args.supply,
-        pubkey=pubkey, staking=args.staking)
+        pubkey=pubkey, staking=args.staking, reward=args.reward)
 v.debug = args.debug
 
 print("Starting votchain [%s]" %args.name)
