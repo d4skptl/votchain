@@ -1,21 +1,28 @@
 # Votchain
 
-This program is a proof-of-concept and still in development, not all features has been yet implemented.
+This program is a proof-of-concept and still in development, not all features have been yet implemented.
 
 ## Introduction
 
 This program simplifies the komodo asset chain creation following the **Vocdoni** principles and design.
 
-Written in *python* it's a wrapper for the komodo daemon and komodo client, unified in a uniq script.
+Written in *python* it's a wrapper for the komodo daemon and komodo client.
+
+A voting chain (**votchain**) is a temporary blockchain including mainly the following characteristics:
+
+- Anonymous by using z-snarks, tokens might be sent from/to a transparent address *t* or from/to a anonymous address **z**
+- Limited amount of life time specified by numer of blocks (during the election process)
+- All supply is controlled by a trusted party, no mining reward. Thus only those identified users will receive vote tokens
+- Mining is protected by a Proof-of-Stake that performs similar to a Proof-of-Authority (only nodes with tokens are able to generate new blocks)
 
 ## Usage
 
 #### Get komodo daemon
 
 First of all the komodo daemon must exist in the filesystem, you can either download it from a komodo official source or use the one compiled by Vocdoni.
-It is recommended to use the Vocdoni one since it has been tested and has enabled all required features.
+It is recommended to use the Vocdoni one since it has been tested and has  all required features enabled.
 
-`wget https://raw.githubusercontent.com/vocdoni/komodo/master/komodod`
+`wget https://raw.githubusercontent.com/vocdoni/komodo/master/komodod.gz -O- | gunzip -c > komodod`
 
 You must place the komodod file to the votchain directory or rather specify the binary location when executing *miner.py* using *-m* parameter.
 
@@ -27,7 +34,7 @@ Fist of all lets generate the keys.
 
 `python3 miner.py -k > mykey`
 
-This file can be used several times, also on several votingchains.
+The keys file *mykey* can be used several times, also on different voting chains.
 
 #### Launch miners
 
