@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+import random, hashlib
+import sys, os, time, argparse
+from votchain import VotchainCli
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='VotChain Miner')
+    parser.add_argument(
+            '-n',
+            dest='name',
+            type=str,
+            default=None,
+            help='Name for the voting chain')
+    parser.add_argument(
+            '-i',
+            dest='keysfile',
+            type=str,
+            default=None,
+            help='File containing keys to be used')
+    parser.add_argument(
+            '-b',
+            dest='balance',
+            action="store_true",
+            help='Show current tokens balance')
+    parser.add_argument(
+            '-s',
+            dest='sendto',
+            type=str,
+            default=None,
+            help='Send tokens to address. Syntax <addr>:<amount>')
+
+
+    return parser.parse_args()
+
+def get_ports(name):
+    m = hashlib.md5()
+    m.update(name.encode('utf-8'))
+    base_port = int('0x'+m.hexdigest(),16)%10000
+    return base_port+20000, base_port+30000
+
+
+args = parse_args()
+pubkey = None
+privkey = None
+address = None
+
+if not args.name:
+    print("Please, specify a name for the chain")
+    sys.exit(1)
+
+if args.keysfile:
+    with open(args.keysfile, 'r') as kf:
+        raw_keys = kf.read()
+    keys = eval(raw_keys)
+    privkey = keys['private_key']
+    pubkey = keys['public_key']
+    address = keys['address']
+
+port,rpc_port = get_ports(args.name)
+
+cli = VotchainCli(rpc_port)
+
+if not cli.is_ready():
+    print("Cannot connect to RPC. Either name is wrong or miner is not running, please start it before using this tool")
+    sys.exit(1)
+
+if privkey: cli.import_key(privkey)
+
+if args.balance:
+    print(%cli.get_balance())
+
+if args.sendto:
+    dst_amt = args.sendto.split(':')
+    if len(dst_amt) < 2:
+        print("Wrong address/amount format. Please use <addr>:<amount>")
+    else:
+        print(cli.send(dst_amt[0], dst_amt[1]))
