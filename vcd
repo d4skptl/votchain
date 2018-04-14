@@ -4,6 +4,8 @@ import random, hashlib
 import sys, os, time, argparse
 from votchain import Votchain, VotchainCli, AddressGenerator
 
+info_period = 10
+
 def parse_args():
     parser = argparse.ArgumentParser(description='VotChain Miner')
     parser.add_argument(
@@ -84,6 +86,30 @@ def get_ports(name):
     base_port = int('0x'+m.hexdigest(),16)%10000
     return base_port+20000, base_port+30000
 
+def init_block_stats(cb):
+    t = int(time.time())
+    global block_stats
+    # key is minutes: [time, blocks_count, last_blocks_diff, is_set]
+    block_stats = { "1":[t,cb,0,False], "2":[t,cb,0,False], "5":[t,cb,0,False],
+                    "10":[t,cb,0,False], "30":[t,cb,0,False], "60":[t,cb,0,False],
+                    "120":[t,cb,0,False],"240":[t,cb,0,False], "480":[t,cb,0,False]}
+
+def update_block_stats(cb):
+    t = int(time.time())
+    for s in block_stats.keys():
+        if t - block_stats[s][0] > int(s)*60:
+            block_stats[s][0] = t
+            block_stats[s][2] = cb - block_stats[s][1]
+            block_stats[s][1] = cb
+            block_stats[s][3] = True
+
+def print_block_stats():
+    print("Stats:", end="")
+    for s in block_stats.keys():
+        if block_stats[s][3]:
+            print(" [%sm] %.2f bl/m |" %(s,round(block_stats[s][2]/int(s),2)), end="")
+    print()
+
 args = parse_args()
 pubkey = None
 privkey = None
@@ -123,20 +149,28 @@ v.start()
 
 cli = VotchainCli(rpc_port)
 
-print("Waiting RPC to be ready")
+print("Waiting RPC to be ready...", end="")
 while not cli.is_ready():
     time.sleep(1)
-print("RPC ready!")
+print(" RPC ready!")
 
 if privkey: cli.import_key(privkey)
+init_block_stats(int(cli.get_blocks()))
+stats_period = 60/info_period
+stats_count = stats_period*2
 
 while True:
-    time.sleep(10)
     blocks = int(cli.get_blocks())
-    print("[%d] blocks:%s connections:%s balance:%s difficulty:%s" 
+    update_block_stats(blocks)
+    stats_count -= 1
+    if stats_count <= 1:
+        print_block_stats()
+        stats_count = stats_period
+    print("[%d] blocks:%s connections:%s balance:%f difficulty:%.2f"
             %(int(time.time()), blocks, cli.get_connections(),
-            cli.get_balance(), cli.get_diff()))
+            float(cli.get_balance()), float(cli.get_diff())))
     if blocks > args.blocks: break
+    time.sleep(info_period)
 
 print("Terminating")
 v.stop()
