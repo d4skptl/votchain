@@ -28,6 +28,12 @@ You must place the komodod file to the votchain directory or rather specify the 
 
 Check https://github.com/vocdoni/komodo/blob/master/README.md for more information regarding the komodo daemon.
 
+#### Download ZkSnark params
+
+Download zkSNARK parameters using Komodo's official script
+
+`wget https://raw.githubusercontent.com/KomodoPlatform/komodo/master/zcutil/fetch-params.sh -O- | bash`
+
 #### Generate keys
 
 Fist of all lets generate the keys.
