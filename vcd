@@ -166,7 +166,7 @@ while True:
     if stats_count <= 1:
         print_block_stats()
         stats_count = stats_period
-    print("[%d] blocks:%s connections:%s balance:%f difficulty:%.2f"
+    print("[%d] blocks:%s connections:%s balance:%.8f difficulty:%.2f"
             %(int(time.time()), blocks, cli.get_connections(),
             float(cli.get_balance()), float(cli.get_diff())))
     if blocks > args.blocks: break

@@ -34,7 +34,7 @@ class Votchain(object):
         for p in peers: 
             self.args.append('-addnode='+p)
             self.args.append('-connect='+p)
-            if whitelistpeers: self.args.append('-whitelist=%s/32'%(p.split(':')[0]))
+            if whitelistpeers: self.args.append('-whitelist=%s'%(p.split(':')[0]))
 
         if not os.path.exists(datadir):
             os.makedirs(datadir)
