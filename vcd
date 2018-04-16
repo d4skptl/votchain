@@ -139,7 +139,7 @@ else: peers = []
 
 v = Votchain(name=args.name, binary=args.binary, peers=peers, port=str(port),
         rpc_port=str(rpc_port), mine=args.gen, supply=args.supply,
-        pubkey=pubkey, staking=args.staking, reward=args.reward)
+        pubkey=pubkey, staking=args.staking, reward=args.reward, whitelistpeers=True)
 v.debug = args.debug
 
 print("Starting votchain [%s]" %args.name)

@@ -7,7 +7,7 @@ class Votchain(object):
     debug = False
     def __init__(self, binary="./komodod", name=None, supply=1000, port=1714,
             rpc_port=None, pubkey=None, peers=[], mine=True,
-            basedir='/tmp', staking=False, reward=None):
+            basedir='/tmp', staking=False, reward=None, whitelistpeers=True):
         self.t = None
         self.proc = None
         self.rpc_port = rpc_port or str((int(100000*random.random())%60000)+5000)
@@ -34,6 +34,7 @@ class Votchain(object):
         for p in peers: 
             self.args.append('-addnode='+p)
             self.args.append('-connect='+p)
+            if whitelistpeers: self.args.append('-whitelist=%s/32'%(p.split(':')[0]))
 
         if not os.path.exists(datadir):
             os.makedirs(datadir)
