@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import random, hashlib
+import random, hashlib, socket
 import sys, os, time, argparse
 from votchain import Votchain, VotchainCli, AddressGenerator
 
@@ -134,7 +134,7 @@ if args.keysfile:
 port,rpc_port = get_ports(args.name)
 if args.peers: 
     peers = args.peers.split(",")
-    peers[:] = map(lambda p: p+":%d"%port, peers)
+    peers[:] = map(lambda p: socket.gethostbyname(p)+":%d"%port, peers)
 else: peers = []
 
 v = Votchain(name=args.name, binary=args.binary, peers=peers, port=str(port),
