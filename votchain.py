@@ -166,6 +166,7 @@ class VotchainCli(object):
 
 class RPCHost(object):
     '''Simple class to comunicate with bitcoin based RPC'''
+    debug = False
     def __init__(self, url):
         self._session = requests.Session()
         self._url = url
@@ -173,6 +174,8 @@ class RPCHost(object):
 
     def call(self, rpcMethod, *params):
         payload = json.dumps({"method": rpcMethod, "params": list(params), "jsonrpc": "2.0"})
+        if self.debug:
+            print("CALL",self._url, payload)
         try:
             response = self._session.post(self._url, headers=self._headers, data=payload)
         except requests.exceptions.ConnectionError:
@@ -185,6 +188,6 @@ class RPCHost(object):
         
         if 'error' in responseJSON and responseJSON['error'] != None:
             raise Exception('Error in RPC call: ' + str(responseJSON['error']))
-        
+        if self.debug: print(responseJSON['result'])
         return responseJSON['result']
 
