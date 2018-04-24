@@ -27,10 +27,11 @@ class Votchain(object):
         self.args.append('-listen')
         if pubkey: self.args.append('-pubkey='+pubkey)
         self.args.append('-datadir='+datadir)
-        self.args.append('-genproclimit=-1')
         self.args.append('-txexpirydelta=100')
 #       self.args.append('-keypool=16000')
-        if mine: self.args.append('-gen')
+        if mine:
+            self.args.append('-gen')
+            self.args.append('-genproclimit=-1')
         for p in peers: 
             self.args.append('-addnode='+p)
             self.args.append('-connect='+p)
