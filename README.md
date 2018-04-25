@@ -24,7 +24,9 @@ It is recommended to use the Vocdoni one since it has been tested and has  all r
 
 `wget https://raw.githubusercontent.com/vocdoni/komodo/master/komodod.gz -O- | gunzip -c > komodod`
 
-You must place the komodod file to the votchain directory or rather specify the binary location when executing *vcd* using *-m* parameter.
+You must place the komodod file to the votchain directory or rather specify the binary location when executing *vcd* using *-m* parameter. Also the komodod should be converted to executable.
+
+`chmod a+x komodod`
 
 Check https://github.com/vocdoni/komodo/blob/master/README.md for more information regarding the komodo daemon.
 
