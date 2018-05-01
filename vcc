@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import random, hashlib
-import sys, os, time, argparse
+import sys, os, time, argparse, json
 from votchain import VotchainCli
+
+FEE = 0.00000001
 
 def parse_args():
     parser = argparse.ArgumentParser(description='VotChain Miner')
@@ -29,18 +31,43 @@ def parse_args():
             action="store_true",
             help='Show wallet info (address and public key)')
     parser.add_argument(
-            '-s',
+            '-tt',
             dest='sendto',
             type=str,
             default=None,
-            help='Send tokens to address. Syntax <addr>:<amount>')
+            help='Send tokens from T to T address. Syntax <addr>:<amount>')
+    parser.add_argument(
+            '-tz',
+            dest='tz_sendto',
+            type=str,
+            default=None,
+            help='Send tokens from T address to Z. Syntax <addr>:<amount>')
+    parser.add_argument(
+            '-zz',
+            dest='zz_sendto',
+            type=str,
+            default=None,
+            help='Send tokens from Z address to T or Z. Syntax <addr>:<amount>')
+    parser.add_argument(
+            '--shield',
+            dest='zshield',
+            action="store_true",
+            help='Shield coinbase tokens to an own Z address')
+    parser.add_argument(
+            '--showzops',
+            dest='show_z_ops',
+            action="store_true",
+            help='Show Z operations status')
     parser.add_argument(
             '-c',
             dest='rawcall',
             type=str,
             default=None,
-            help='Make raw RPC calls to komodod like: -c help or -c "getblock 1"')
+            help='Make raw RPC calls to daemon like: -c "getblock 1"')
     return parser.parse_args()
+
+def jprint(text):
+    print(json.dumps(text, indent=2, sort_keys=True, ensure_ascii=False))
 
 def get_ports(name):
     m = hashlib.md5()
@@ -69,6 +96,7 @@ if args.keysfile:
 port,rpc_port = get_ports(args.name)
 
 cli = VotchainCli(rpc_port)
+cli.set_fee(FEE)
 
 if not cli.is_ready():
     print("Cannot connect to RPC. Either name is wrong or miner is not running, please start it before using this tool")
@@ -80,11 +108,16 @@ if args.balance:
     print(cli.get_balance())
 
 if args.walletinfo:
-    for a in cli.get_addresses():
-        print("\nAddress: %s\nPubKey: %s" %(a,cli.get_pubkey(addr=a)))
+    for a in cli.get_t_addresses_balance():
+        print("Address:%s Balance:%.8f" %(a['address'], a['amount']))
+    for a in cli.get_z_addresses_balance():
+        print("Address:%s Balance:%.8f" %(a['address'], a['amount']))
 
 if args.rawcall:
-    print(cli.call(*args.rawcall.split()))
+    out = cli.call(*args.rawcall.split())
+    if type(out) == list:
+        for l in out: jprint(l)
+    else: print(out)
 
 if args.sendto:
     dst_amt = args.sendto.split(':')
@@ -92,3 +125,23 @@ if args.sendto:
         print("Wrong address/amount format. Please use <addr>:<amount>")
     else:
         print(cli.send(dst_amt[0], dst_amt[1]))
+
+if args.tz_sendto:
+    dst_amt = args.tz_sendto.split(':')
+    if len(dst_amt) < 2:
+        print("Wrong address/amount format. Please use <addr>:<amount>")
+    else:
+        print(cli.tz_send(dst_amt[0], float(dst_amt[1])))
+
+if args.zz_sendto:
+    dst_amt = args.zz_sendto.split(':')
+    if len(dst_amt) < 2:
+        print("Wrong address/amount format. Please use <addr>:<amount>")
+    else:
+        print(cli.zz_send(dst_amt[0], dst_amt[1]))
+
+if args.zshield:
+    print(cli.zshield())
+
+if args.show_z_ops:
+    jprint(cli.call('z_getoperationstatus'))
