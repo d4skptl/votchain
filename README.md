@@ -24,6 +24,8 @@ It is recommended to use the Vocdoni one since it has been tested and has  all r
 
 `wget https://raw.githubusercontent.com/vocdoni/komodo/master/komodod.gz -O- | gunzip -c > komodod`
 
+Make it executable: `chmod +x komodod`
+
 You must place the komodod file to the votchain directory or rather specify the binary location when executing *vcd* using *-m* parameter.
 
 Check https://github.com/vocdoni/komodo/blob/master/README.md for more information regarding the komodo daemon.
@@ -93,16 +95,23 @@ optional arguments:
 ```
 
 ```
-usage: vcc [-h] [-n NAME] [-i KEYSFILE] [-b] [-w] [-s SENDTO] [-c RAWCALL]
+usage: vcc [-h] [-n NAME] [-i KEYSFILE] [-b] [-w] [-tt SENDTO] [-tz TZ_SENDTO]
+           [-zz ZZ_SENDTO] [--shield] [--showzops] [--fee SET_FEE]
+           [-c RAWCALL]
 
 VotChain Miner
 
 optional arguments:
-  -h, --help   show this help message and exit
-  -n NAME      Name for the voting chain
-  -i KEYSFILE  File containing keys to be used
-  -b           Show current tokens balance
-  -w           Show wallet info (address and public key)
-  -s SENDTO    Send tokens to address. Syntax <addr>:<amount>
-  -c RAWCALL   Make raw RPC calls to komodod like: -c help or -c "getblock 1"
+  -h, --help     show this help message and exit
+  -n NAME        Name for the voting chain
+  -i KEYSFILE    File containing keys to be used
+  -b             Show current tokens balance
+  -w             Show wallet info (address and public key)
+  -tt SENDTO     Send tokens from T to T address. Syntax <addr>:<amount>
+  -tz TZ_SENDTO  Send tokens from T address to Z. Syntax <addr>:<amount>
+  -zz ZZ_SENDTO  Send tokens from Z address to T or Z. Syntax <addr>:<amount>
+  --shield       Shield coinbase tokens to an own Z address
+  --showzops     Show Z operations status
+  --fee SET_FEE  Set fee for tx operation (float)
+  -c RAWCALL     Make raw RPC calls to daemon like: -c "getblock 1"
 ```
