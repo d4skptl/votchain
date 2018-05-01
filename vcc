@@ -4,7 +4,7 @@ import random, hashlib
 import sys, os, time, argparse, json
 from votchain import VotchainCli
 
-FEE = 0.00000001
+DEFAULT_FEE = 0.00000001
 
 def parse_args():
     parser = argparse.ArgumentParser(description='VotChain Miner')
@@ -59,6 +59,12 @@ def parse_args():
             action="store_true",
             help='Show Z operations status')
     parser.add_argument(
+            '--fee',
+            dest='set_fee',
+            type=float,
+            default=DEFAULT_FEE,
+            help='Set fee for tx operation (float)')
+    parser.add_argument(
             '-c',
             dest='rawcall',
             type=str,
@@ -96,7 +102,7 @@ if args.keysfile:
 port,rpc_port = get_ports(args.name)
 
 cli = VotchainCli(rpc_port)
-cli.set_fee(FEE)
+cli.set_fee(DEFAULT_FEE)
 
 if not cli.is_ready():
     print("Cannot connect to RPC. Either name is wrong or miner is not running, please start it before using this tool")
@@ -106,6 +112,9 @@ if privkey: cli.import_key(privkey)
 
 if args.balance:
     print(cli.get_balance())
+
+if args.set_fee:
+    cli.set_fee(args.set_fee)
 
 if args.walletinfo:
     for a in cli.get_t_addresses_balance():
