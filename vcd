@@ -132,7 +132,7 @@ if args.keysfile:
     address = keys['address']
 
 port,rpc_port = get_ports(args.name)
-if args.peers: 
+if args.peers:
     peers = args.peers.split(",")
     peers[:] = map(lambda p: socket.gethostbyname(p)+":%d"%port, peers)
 else: peers = []
@@ -166,9 +166,10 @@ while True:
     if stats_count <= 1:
         print_block_stats()
         stats_count = stats_period
-    print("[%d] blocks:%s connections:%s balance:%.8f difficulty:%.2f"
+    print("[%d] blocks:%s connections:%s balance(t,z):%.8f,%.8f difficulty:%.2f"
             %(int(time.time()), blocks, cli.get_connections(),
-            float(cli.get_balance()), float(cli.get_diff())))
+            float(cli.get_balance()["t"]), float(cli.get_balance()["z"]),
+            float(cli.get_diff())))
     if blocks > args.blocks: break
     time.sleep(info_period)
 

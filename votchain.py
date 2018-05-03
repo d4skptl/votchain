@@ -32,7 +32,7 @@ class Votchain(object):
         if mine:
             self.args.append('-gen')
             self.args.append('-genproclimit=-1')
-        for p in peers: 
+        for p in peers:
             self.args.append('-addnode='+p)
             self.args.append('-connect='+p)
             if whitelistpeers: self.args.append('-whitelist=%s'%(p.split(':')[0]))
@@ -77,7 +77,7 @@ class AddressGenerator(object):
     '''Starts a temporary komodo daemon and returns the wallet addresses generated'''
 
     def __init__(self, binary="./komodod", basedir='/tmp'):
-        rpc_port = int(random.random()*1000)+17000 
+        rpc_port = int(random.random()*1000)+17000
         self.datadir = '%s/addrgen_%d'%(basedir,rpc_port)
         self.args = [binary]
         self.args.append('-rpcport='+str(rpc_port))
@@ -119,13 +119,14 @@ class VotchainCli(object):
     '''Votchain client to communicate with komodo daemon via RPC'''
     def __init__(self, port, host='127.0.0.1', user='vocdoni', passw='vocdoni'):
         self.rpc = RPCHost('http://%s:%s@%s:%s'%(user,passw,host,str(port)))
+        self.fee = 0.00000001
 
     def call(self, rpcMethod, *params):
         try:
             out = self.rpc.call(rpcMethod, *params)
-        except Exception:
-            print("RPC not responding")
-            out = False
+        except Exception as e:
+            print(e)
+            out = [{}]
         return out
 
     def is_ready(self):
@@ -136,15 +137,42 @@ class VotchainCli(object):
             ready = False
         return ready
 
+    def set_fee(self, fee):
+        self.fee = fee
+
     def get_blocks(self):
         return self.call('getblockcount') or 0
-        
+
     def get_diff(self):
         return self.call('getdifficulty')
 
+    def get_t_addresses_balance(self):
+        out = self.call('listunspent')
+        unspent = []
+        for addr in out:
+            unspent.append({"address":addr['address'], "amount":addr['amount']})
+        return unspent
+
+    def get_z_addresses(self):
+        zlist = self.call('z_listaddresses')
+        if len(zlist) == 0:
+            zlist = [self.call('z_getnewaddress')]
+        return zlist
+
+    def get_z_addresses_balance(self):
+        z_addresses = self.get_z_addresses()
+        unspent = []
+        for addr in z_addresses:
+            balance = self.call('z_getbalance', addr)
+            unspent.append({"address":addr, "amount":balance})
+        return unspent
+
+    def get_pubkey(self, addr):
+        return cli.get_pubkey(addr=addr)
+
     def get_balance(self):
-        out = self.call('getinfo')
-        if out: return out['balance']
+        out = self.call('z_gettotalbalance')
+        if out: return ({"t":out['transparent'],"z":out['private']})
 
     def get_connections(self):
         out = self.call('getinfo')
@@ -152,7 +180,7 @@ class VotchainCli(object):
 
     def get_addresses(self, account=""):
         return self.call("getaddressesbyaccount", account)
-    
+
     def get_pubkey(self, addr=None):
         if not addr:
             addr = self.get_addresses()[0]
@@ -162,8 +190,37 @@ class VotchainCli(object):
         return self.call("importprivkey", key)
 
     def send(self, dst_addr, amount, account=""):
+        self.call("settxfee", self.fee)
         return self.call("sendfrom",account, dst_addr, amount)
 
+    #z_sendmany "fromaddress" [{"address":... ,"amount":...},...] ( minconf ) ( fee )
+    def tz_send(self, dst_addr, amount):
+        t_addresses = self.get_t_addresses_balance()
+        t_addr = None
+        for t in t_addresses:
+            if float(t["amount"]) >= amount: t_addr = t["address"]
+        if not t_addr:
+            print("There is not an address with enough funds")
+            return False
+        return self.call("z_sendmany", t_addr, [{"address":dst_addr,"amount":amount}], 1, self.fee)
+
+    def zz_send(self, dst_addr, amount):
+        z_addresses = self.get_z_addresses_balance()
+        z_addr = None
+        for z in z_addresses:
+            if z["amount"] >= amount: z_addr = t["address"]
+        if not z_addr:
+            print("There is not an address with enough funds")
+            return False
+        return self.call("z_sendmany", z_addr, [{"address":dst_addr,"amount":amount}], 1, self.fee)
+
+    def zt_send(self, dst_addr, amount):
+        return self.zz_send(dst_addr, amount)
+
+    #z_shieldcoinbase "fromaddress" "tozaddress" ( fee ) ( limit )
+    def zshield(self):
+        z_addr = self.get_z_addresses()[0]
+        return self.call("z_shieldcoinbase", "RBx4HTje7LAQNkzAdQdnxztX9oQkacpeyU", z_addr, self.fee)
 
 class RPCHost(object):
     '''Simple class to comunicate with bitcoin based RPC'''
@@ -181,14 +238,13 @@ class RPCHost(object):
             response = self._session.post(self._url, headers=self._headers, data=payload)
         except requests.exceptions.ConnectionError:
             raise Exception('Failed to connect for remote procedure call.')
- 
+
         if not response.status_code in (200, 500):
             raise Exception('RPC connection failure: ' + str(response.status_code) + ' ' + response.reason)
-        
+
         responseJSON = response.json()
-        
+
         if 'error' in responseJSON and responseJSON['error'] != None:
             raise Exception('Error in RPC call: ' + str(responseJSON['error']))
         if self.debug: print(responseJSON['result'])
         return responseJSON['result']
-
